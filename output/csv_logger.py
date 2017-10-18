@@ -43,7 +43,7 @@ class CSVLogger:
         # extract message type
         msg_type = data['msg_type']
 
-        # log only Tag Position Report messages
+        # filter using message type
         if msg_type != 'tpr' and msg_type != 'apr'\
         and msg_type != 'kmf':
             return 
