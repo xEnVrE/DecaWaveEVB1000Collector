@@ -38,8 +38,8 @@ class Device(Process):
     in background.
     """
     def __init__(self, port):
-        # call Thread constructor
-        Thread.__init__(self)
+        # call Process constructor
+        Process.__init__(self)
         
         # save port
         self.port = port
