@@ -13,6 +13,6 @@ if __name__ == '__main__':
     # instantiate device_manager
     dev_man = DeviceManager(vid_pid_list)
 
-    # start the device manager
-    dev_man.start()
+    # run the device manager
+    dev_man.run()
     

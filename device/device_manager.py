@@ -286,20 +286,12 @@ class DeviceVIDPIDList:
             print('Error: No (VID, PID) entries found in ' + self.filename + '.')
             sys.exit(1)
               
-class DeviceManager(Thread):
+class DeviceManager():
     """
-    Manage EVB1000 Tag devices connected through a serial port.
-
-    Inherits from Thread to handle devices connection/disconnection
-    in background.
+    Manage EVB1000 devices connected through a serial port.
     """
     
     def __init__(self, vid_pid_list):
-
-
-        # call Thread constructor
-        Thread.__init__(self)
-
         # empty list of ports
         self.connected_ports = []
 
@@ -349,7 +341,7 @@ class DeviceManager(Thread):
     
     def run(self):
         """
-        Thread main method.
+        Device Manager main method.
         """
 
         while True:
