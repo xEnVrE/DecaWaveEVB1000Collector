@@ -10,8 +10,8 @@ def hash_fun(self):
 ListPortInfo.__hash__ = hash_fun
 
 # multi-threading
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread
 from threading import Lock
+from threading import Thread
 
 # sleep
 from time import sleep
@@ -19,9 +19,6 @@ from time import sleep
 # sys
 import sys
 import errno
-
-# QtWidgets contains QApplication
-from PyQt5 import QtWidgets
 
 # EVB1000 decoder
 from device.decoder import DataFromEVB1000
@@ -33,20 +30,16 @@ from output.csv_logger import CSVLogger
 # csv required by class DeviceVIDPIDList
 import csv
 
-class Device(QThread):
+class Device(Thread):
     """
     Represents an EVB1000 Tag connected through a serial port.
 
-    Inherits from QThread to handle serial i/o operations
+    Inherits from Thread to handle serial i/o operations
     in background.
     """
-
-    #pyqt signals are class attributes
-    new_data_available = pyqtSignal(str)
-
     def __init__(self, port):
         # call Thread constructor
-        QThread.__init__(self)
+        Thread.__init__(self)
         
         # save port
         self.port = port
@@ -209,9 +202,6 @@ class Device(QThread):
 
         self.serial.close()
 
-    def register_new_data_available_slot(self, slot):
-        self.new_data_available.connect(slot)
-
 class MalformedConfigurationFile(Exception):
         pass
 
@@ -296,23 +286,19 @@ class DeviceVIDPIDList:
             print('Error: No (VID, PID) entries found in ' + self.filename + '.')
             sys.exit(1)
               
-class DeviceManager(QThread):
+class DeviceManager(Thread):
     """
     Manage EVB1000 Tag devices connected through a serial port.
 
-    Inherits from QThread to handle devices connection/disconnection
+    Inherits from Thread to handle devices connection/disconnection
     in background.
     """
-
-    #pyqt signals are class attributes
-    new_dev_connected_sig = pyqtSignal()
-    dev_removed_sig = pyqtSignal()
     
     def __init__(self, vid_pid_list):
 
 
         # call Thread constructor
-        QThread.__init__(self)
+        Thread.__init__(self)
 
         # empty list of ports
         self.connected_ports = []
@@ -482,8 +468,3 @@ class DeviceManager(QThread):
 
         return new_ports, removed_ports
 
-    def register_new_devices_connected_slot(self, slot):
-        self.new_dev_connected_sig.connect(slot)
-
-    def register_devices_removed_slot(self, slot):
-        self.dev_removed_sig.connect(slot)
