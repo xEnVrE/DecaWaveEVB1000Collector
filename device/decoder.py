@@ -104,6 +104,18 @@ class DataFromEVB1000:
                                  pos_x_a3,   pos_y_a3,   pos_z_a3
                                  (float),    (float),    (float)
 
+        anc_autorng_report    := msg_type = 'arr', range_number,  master_id,   source_id 
+                                 (string)          (unsigned),    (unsigned),  (unsigned)
+                      
+                                 dest_id,    range_value,   anch_resp_rx_or_anch_final_rx
+                                 (unsigned), (float),       (string)
+        
+        tag_ranging_report    := msg_type = 'trr', range_number,  range_to_0,  range_to_1,
+                                 (string),         (unsigned),    (unsigned),  (unsigned)
+
+                                 range_to_2, range_to_3
+                                 (unsigned), (unsigned)
+
         If the type is valid the field names of the message 
         and its structure are stored and the function return True.
 
@@ -128,6 +140,14 @@ class DataFromEVB1000:
                                'a2_x', 'a2_y', 'a2_z',
                                'a3_x', 'a3_y', 'a3_z']
             self.msg_structure = ['s'] + ['u'] + ['f'] * 12
+        elif msg_type == 'arr':
+            self.msg_fields = ['msg_name', 'range_num',\
+                               'master_id', 'src_id',\
+                               'dest_id', 'range', 'flag']
+            self.msg_structure = ['s'] + ['u'] * 4 + ['f'] + ['s']
+        elif msg_type == 'trr':
+            self.msg_fields = ['msg_name', 'tag_id', 'range_num', 'r0', 'r1', 'r2', 'r3']
+            self.msg_structure = ['s'] + ['u'] * 6
         else:
             return False
 
