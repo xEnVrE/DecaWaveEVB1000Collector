@@ -1,20 +1,18 @@
-# DecaWaveEVB1000Viewer
-DecaWaveEVB1000 Viewer is a 3D viewer with logging capabilities for the DecaWave EVB1000 system.
+# DecaWaveEVB1000Collector
+DecaWaveEVB1000 Collector is a tool that collect ranging, autoranging and trilateration data from DecaWave EVB1000 enabled devices.
 
 Usage
 ------------
 Python 3.x is required.
 
 Libraries required are
- * Matplotlib
  * PySerial
- * PyQt5
-
+ 
 - **On Linux:**
 ```
-    $ git clone https://github.com/xEnVrE/DecaWaveEVB1000Viewer.git
-    $ cd DecaWaveEVB1000Viewer.git
-    $ python app.py
+    $ git clone https://github.com/xEnVrE/DecaWaveEVB1000Collector.git
+    $ cd DecaWaveEVB1000Collector.git
+    $ python collector.py
 ```
 > You may need to add your user to the group that owns serial port device files  (e.g. /dev/ttyACM0) to 
      execute the application succesfully. However you can always run the script as a super user like
