@@ -13,6 +13,9 @@ if __name__ == '__main__':
     # instantiate device_manager
     dev_man = DeviceManager(vid_pid_list)
 
-    # run the device manager
-    dev_man.run()
-    
+    try:
+        # run the device manager
+        dev_man.run()
+    except KeyboardInterrupt:
+        dev_man.stop_all_devices()
+        sys.exit(0)
