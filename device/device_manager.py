@@ -9,9 +9,9 @@ def hash_fun(self):
     return hash(str(self))
 ListPortInfo.__hash__ = hash_fun
 
-# multi-threading
-from threading import Lock
-from threading import Thread
+# multiprocessing
+from multiprocessing import Lock
+from multiprocessing import Process
 
 # sleep
 from time import sleep
@@ -30,11 +30,11 @@ from output.csv_logger import CSVLogger
 # csv required by class DeviceVIDPIDList
 import csv
 
-class Device(Thread):
+class Device(Process):
     """
     Represents an EVB1000 Tag connected through a serial port.
 
-    Inherits from Thread to handle serial i/o operations
+    Inherits from Process to handle serial i/o operations
     in background.
     """
     def __init__(self, port):
@@ -418,7 +418,7 @@ class DeviceManager():
 
         # wait for thread end
         for device_id in self.configured_devices:
-            self.configured_devices[device_id].wait()
+            self.configured_devices[device_id].join()
 
 
     def update_ports(self):
