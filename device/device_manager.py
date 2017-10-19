@@ -58,14 +58,10 @@ class Device(multiprocessing.Process):
         self.id = str(hash(self.port))
 
         # instantiate a new csv logger
-        self._logger = CSVLogger()
+        self.logger = CSVLogger()
 
     def __str__(self):
         return self.port.device
-
-    @property
-    def logger(self):
-        return self._logger
 
     @property
     def state(self):
