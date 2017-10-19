@@ -17,20 +17,9 @@ class CSVLogger:
         # empty ditionary of writers
         self.writers = dict()
 
-        # set state to disabled
-        self._enabled = False
-
         # list of allowed message types
         self.allowed_msg_types = ['tpr', 'kmf', 'apr',\
                                   'arr', 'trr']
-    @property
-    def enabled(self):
-        return self._enabled
-
-    @enabled.setter
-    def enabled(self, state):
-        self._enabled = state
-
     def create_file_name(self, msg_type, device_id):
         """
         Generate the filename depending on the msg_type and the device ID.
@@ -51,10 +40,6 @@ class CSVLogger:
         """
         Log new line from EVB1000 serial line.
         """
-
-        # log only if the logger is enabled
-        if not self.enabled:
-            return
 
         # extract data
         data = evb1000_data.decoded
