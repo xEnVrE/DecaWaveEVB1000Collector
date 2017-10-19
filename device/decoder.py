@@ -141,12 +141,12 @@ class DataFromEVB1000:
                                'a3_x', 'a3_y', 'a3_z']
             self.msg_structure = ['s'] + ['u'] + ['f'] * 12
         elif msg_type == 'arr':
-            self.msg_fields = ['msg_name', 'id',\
+            self.msg_fields = ['msg_type', 'id',\
                                'master_id', 'src_id',\
                                'dest_id', 'range', 'flag']
             self.msg_structure = ['s'] + ['u'] * 4 + ['f'] + ['s']
         elif msg_type == 'trr':
-            self.msg_fields = ['msg_name', 'id', 'range_num', 'r0', 'r1', 'r2', 'r3']
+            self.msg_fields = ['msg_type', 'id', 'range_num', 'r0', 'r1', 'r2', 'r3']
             self.msg_structure = ['s'] + ['u'] * 6
         else:
             return False
