@@ -131,6 +131,9 @@ class Device(multiprocessing.Process):
                 if not self.state:
                     # close csv file
                     self.logger.close()
+
+                    # free tqdm position
+                    self.progress.free_tqdm_position()
             
                     # stop thread
                     self.close()
