@@ -30,6 +30,8 @@ from output.csv_logger import CSVLogger
 # csv required by class DeviceVIDPIDList
 import csv
 
+import time
+
 class Device(multiprocessing.Process):
     """
     Represents an EVB1000 Tag connected through a serial port.
@@ -50,6 +52,7 @@ class Device(multiprocessing.Process):
         # set device state
         self.running = multiprocessing.Value(c_bool, False)
         self.running_lock = multiprocessing.Lock()
+        self.running.value = True
 
         # set device id
         self.id = str(hash(self.port))
@@ -89,42 +92,46 @@ class Device(multiprocessing.Process):
         """
         Process main method.
         """
-
-        # gracefully stop process if the connection is not working
-        if not self.connect():
-            return
+        try:
+            # gracefully stop process if the connection is not working
+            if not self.connect():
+                return
         
-        while self.state:
-            try:
-                # attempt reception of a new line
-                line = self.serial.readline()
+            while self.state:
+                try:
+                    # attempt reception of a new line
+                    line = self.serial.readline()
 
-                # process only non null data
-                if len(line) > 0:
+                    # process only non null data
+                    if len(line) > 0:
 
-                    # decode last line received if possible
-                    try:
-                        evb1000_data = DataFromEVB1000(line)
-                    except InvalidDataFromEVB1000:
-                        # ignore this line
-                        continue
+                        # decode last line received if possible
+                        try:
+                            evb1000_data = DataFromEVB1000(line)
+                        except InvalidDataFromEVB1000:
+                            # ignore this line
+                            continue
 
-                    # continue only if message type was decoded successfully
-                    if evb1000_data.msg_type_decoded:
+                        # continue only if message type was decoded successfully
+                        if evb1000_data.msg_type_decoded:
 
-                        # log to file
-                        self.logger.log_data(evb1000_data)
+                            # log to file
+                            self.logger.log_data(evb1000_data)
 
-            except SerialException:
-                pass
+                except SerialException:
+                    pass
 
-        # greacefully stop process when the its state is set to False
-        if not self.state:
+                # greacefully stop process when the its state is set to False
+                if not self.state:
+                    # close csv file
+                    self.logger.close()
+            
+                    # stop thread
+                    self.close()
+                    
+        except KeyboardInterrupt:
             # close csv file
             self.logger.close()
-            
-            # stop thread
-            self.close()
 
     def configure(self):
         """
@@ -337,6 +344,10 @@ class DeviceManager():
         
         # for each port create a new Device and start the underlying thread
         for p in ports:
+            # print info
+            print('DeviceManager[' + time.strftime("%d-%m-%Y %H:%M:%S") +\
+                  ']: new device connected (port ' + str(p) + ')')
+            
             new_device = Device(p)
             self.configured_devices[new_device.id] = new_device
             new_devices.append(new_device)
@@ -356,6 +367,11 @@ class DeviceManager():
         # for each port change the state of the underlying thread
         # from 'running' to 'stopped' using stop_device()
         for p in ports:
+
+            # print info
+            print('DeviceManager[' + time.strftime("%d-%m-%Y %H:%M:%S") +\
+                  ']: device disconnected (port ' + str(p) + ')')
+            
             # device id is defined as str(port.__hash__())
             device_id = str(hash(p))
             self.configured_devices[device_id].stop_device()
