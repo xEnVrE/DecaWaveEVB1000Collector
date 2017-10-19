@@ -38,7 +38,32 @@ class TqdmProgress:
         desc += str(data['id'])
             
         return desc
-        
+
+    def get_tqdm_position(self):
+        """
+        Obtain a position in the tqdm output list.
+        """
+
+        self.tqdm_pos_lock.acquire()
+            
+        pos = self.tqdm_position.value
+        self.tqdm_position.value = pos + 1
+            
+        self.tqdm_pos_lock.release()
+
+        return pos
+
+    def free_tqdm_position(self):
+        """
+        Free the position in the tqdm output list.
+        """
+        self.tqdm_pos_lock.acquire()
+            
+        pos = self.tqdm_position.value
+        self.tqdm_position.value = pos - 1
+            
+        self.tqdm_pos_lock.release()
+
     def new_message_event(self, evb1000_data):
         """
         Update the progress meter when a new message arrives.
@@ -55,12 +80,7 @@ class TqdmProgress:
         except KeyError:
 
             # get the position of the progress meter
-            self.tqdm_pos_lock.acquire()
-            
-            pos = self.tqdm_position.value
-            self.tqdm_position.value = pos + 1
-            
-            self.tqdm_pos_lock.release()
+            pos = self.get_tqdm_position()
             
             # if the key does not exist the meter has to be created
             meter = tqdm(unit='msg', bar_format = '{desc}:{bar}{rate_fmt}', position = pos)
