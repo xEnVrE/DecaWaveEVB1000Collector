@@ -1,4 +1,4 @@
-# pyserial
+z# pyserial
 import serial
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
@@ -10,8 +10,8 @@ def hash_fun(self):
 ListPortInfo.__hash__ = hash_fun
 
 # multiprocessing
-from multiprocessing import Lock
-from multiprocessing import Process
+import multiprocessing
+from ctypes import c_bool
 
 # sleep
 from time import sleep
@@ -30,12 +30,12 @@ from output.csv_logger import CSVLogger
 # csv required by class DeviceVIDPIDList
 import csv
 
-class Device(Process):
+class Device(multiprocessing.Process):
     """
     Represents an EVB1000 Tag connected through a serial port.
 
     Inherits from Process to handle serial i/o operations
-    in background.
+    in a separate process.
     """
     def __init__(self, port):
         # call Process constructor
@@ -48,15 +48,11 @@ class Device(Process):
         self.configure()
 
         # set device state
-        self._state = 'running'
-        self.state_lock = Lock()
+        self.running = multiprocessing.Value(c_bool, False)
+        self.running_lock = multiprocessing.Lock()
 
         # set device id
         self.id = str(hash(self.port))
-
-        # data
-        self._last_data = None
-        self.data_lock = Lock()
 
         # instantiate a new csv logger
         self._logger = CSVLogger()
@@ -69,55 +65,36 @@ class Device(Process):
         return self._logger
 
     @property
-    def last_data(self):
-        self.data_lock.acquire()
-
-        data = self._last_data
-        
-        self.data_lock.release()
-
-        return data
-
-    @last_data.setter
-    def last_data(self, data):
-        self.data_lock.acquire()
-
-        self._last_data = data
-        
-        self.data_lock.release()
-        
-    @property
     def state(self):
-        self.state_lock.acquire()
-        value = self._state
-        self.state_lock.release()
+        self.running_lock.acquire()
+        value = self.running.value
+        self.running_lock.release()
         
         return self._state
 
     @state.setter
     def state(self, new_state):
-        self.state_lock.acquire()
-        self._state = new_state
-        self.state_lock.release()
+        self.running_lock.acquire()
+        self.running.value = new_state
+        self.running_lock.release()
 
     def stop_device(self):
         """
-        Change the state of the device from 'running' to 'stopped'.
+        Change the running state of the device from True to False
         """
 
-        self.state = 'stopped'
+        self.state = False
 
     def run(self):
         """
-        Thread main method.
+        Process main method.
         """
 
-        # gracefully stop thread if the connection is not working
-        # TODO: signal the GUI that an I/O error occured
+        # gracefully stop process if the connection is not working
         if not self.connect():
             return
         
-        while self.state == 'running':
+        while self.state:
             try:
                 # attempt reception of a new line
                 line = self.serial.readline()
@@ -126,14 +103,6 @@ class Device(Process):
                 if len(line) > 0:
 
                     # store new line received
-                    # access to last_data here may happen *before*
-                    # the GUI has requested the data related to the last
-                    # signal emission. In this case the old line is overwritten
-                    # by the new one.
-                    #
-                    # TODO: consider a buffered approach
-                    #
-                    
                     # decode last line received if possible
                     try:
                         evb1000_data = DataFromEVB1000(line)
@@ -144,10 +113,7 @@ class Device(Process):
                     # continue only if message type was decoded successfully
                     if evb1000_data.msg_type_decoded:
                         # store data
-                        self.last_data = evb1000_data.decoded
-
-                        # signal the GUI that new data is available
-                        self.new_data_available.emit(self.id)
+                        last_data = evb1000_data.decoded
 
                         # log to file
                         self.logger.log_data(evb1000_data)
@@ -155,7 +121,7 @@ class Device(Process):
             except SerialException:
                 pass
 
-        if self.state == 'stopped':
+        if not self.state:
             # close csv file
             self.logger.close()
             
