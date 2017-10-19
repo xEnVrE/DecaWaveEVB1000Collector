@@ -102,7 +102,6 @@ class Device(multiprocessing.Process):
                 # process only non null data
                 if len(line) > 0:
 
-                    # store new line received
                     # decode last line received if possible
                     try:
                         evb1000_data = DataFromEVB1000(line)
@@ -112,8 +111,6 @@ class Device(multiprocessing.Process):
 
                     # continue only if message type was decoded successfully
                     if evb1000_data.msg_type_decoded:
-                        # store data
-                        last_data = evb1000_data.decoded
 
                         # log to file
                         self.logger.log_data(evb1000_data)
@@ -121,6 +118,7 @@ class Device(multiprocessing.Process):
             except SerialException:
                 pass
 
+        # greacefully stop process when the its state is set to False
         if not self.state:
             # close csv file
             self.logger.close()
