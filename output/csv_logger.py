@@ -20,6 +20,9 @@ class CSVLogger:
         # set state to disabled
         self._enabled = False
 
+        # list of allowed message types
+        self.allowed_msg_types = ['tpr', 'kmf', 'apr',\
+                                  'arr', 'trr']
     @property
     def enabled(self):
         return self._enabled
@@ -27,6 +30,22 @@ class CSVLogger:
     @enabled.setter
     def enabled(self, state):
         self._enabled = state
+
+    def create_file_name(self, msg_type, device_id):
+        """
+        Generate the filename depending on the msg_type and the device ID.
+        """
+
+        filename = ''
+        
+        if msg_type == 'tpr' or msg_type == 'apr' or msg_type == 'trr':
+            filename = "tag_" + str(device_id) + "_" +\
+                       time.strftime("%d_%m_%Y") + "_" + str(msg_type)
+        # maintain compatibility with MATLAB collection facilities
+        elif msg_type == 'arr':
+            filename = 'a2a_anch_' + str(device_id)
+
+        return filename
         
     def log_data(self, evb1000_data):
         """
@@ -44,9 +63,8 @@ class CSVLogger:
         msg_type = data['msg_type']
 
         # filter using message type
-        if msg_type != 'tpr' and msg_type != 'apr'\
-        and msg_type != 'kmf':
-            return 
+        if not msg_type in self.allowed_msg_types:
+            return
 
         try:
             self.writers[msg_type].writerow(evb1000_data.decoded)
@@ -54,8 +72,7 @@ class CSVLogger:
             
             # if the key does not exist the file has to be
             # created for the first time
-            filename = "tag_" + str(data['tag_id']) + "_" +\
-                       time.strftime("%d_%m_%Y") + "_" + str(msg_type)
+            filename = self.create_file_name(msg_type, data['id'])
             
             # file is opened in append mode so that a newly
             # connected tag with the same id logs in the same file
