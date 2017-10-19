@@ -318,16 +318,10 @@ class DeviceManager():
                 # configure devices connected to ports in new_ports
                 self.new_devices = self.configure_devices(new_ports)
 
-                # signal GUI that new devices are available
-                self.new_dev_connected_sig.emit()
-
             # in case of removed ports
             if removed_ports:
                 # removed devices that were disconnected
                 self.removed_devices = self.remove_devices(removed_ports)
-
-                # signal GUI that some devices were removed
-                self.dev_removed_sig.emit()
 
             # wait some time
             sleep(1)
