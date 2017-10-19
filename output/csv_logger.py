@@ -78,6 +78,5 @@ class CSVLogger:
         """
         Close the file descriptor.
         """
-        print('close')
         for key in self.files:
             self.files[key].close()
