@@ -39,7 +39,7 @@ class Device(multiprocessing.Process):
     """
     def __init__(self, port):
         # call Process constructor
-        Process.__init__(self)
+        multiprocessing.Process.__init__(self)
         
         # save port
         self.port = port
@@ -70,7 +70,7 @@ class Device(multiprocessing.Process):
         value = self.running.value
         self.running_lock.release()
         
-        return self._state
+        return value
 
     @state.setter
     def state(self, new_state):
