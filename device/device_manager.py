@@ -30,6 +30,9 @@ from output.csv_logger import CSVLogger
 # csv required by class DeviceVIDPIDList
 import csv
 
+# import tqdm progress meter
+from output.tqdm_progress import TqdmProgress
+
 import time
 
 class Device(multiprocessing.Process):
@@ -39,7 +42,7 @@ class Device(multiprocessing.Process):
     Inherits from Process to handle serial i/o operations
     in a separate process.
     """
-    def __init__(self, port):
+    def __init__(self, port, tqdm_position, tqdm_pos_lock):
         # call Process constructor
         multiprocessing.Process.__init__(self)
         
@@ -50,15 +53,19 @@ class Device(multiprocessing.Process):
         self.configure()
 
         # set device state
-        self.running = multiprocessing.Value(c_bool, False)
+        self.running = multiprocessing.Value(c_bool, True)
         self.running_lock = multiprocessing.Lock()
-        self.running.value = True
+        #self.running.value = True
 
         # set device id
         self.id = str(hash(self.port))
 
         # instantiate a new csv logger
         self.logger = CSVLogger()
+
+        # tqdm progress meter
+        self.progress = TqdmProgress(tqdm_position,\
+                                     tqdm_pos_lock)
 
     def __str__(self):
         return self.port.device
@@ -113,6 +120,9 @@ class Device(multiprocessing.Process):
 
                             # log to file
                             self.logger.log_data(evb1000_data)
+
+                            # update progress meter
+                            self.progress.new_message_event(evb1000_data)
 
                 except SerialException:
                     pass
@@ -273,6 +283,11 @@ class DeviceManager():
         # store list of PIDs and VIDs of devices belonging to the EVB1000 system
         self.target_vid_pid = vid_pid_list.get_vid_pid_list()
 
+        # create a shared Value for tqdm progress meter positioning
+        self.tqdm_position = multiprocessing.Value('i', 0)
+        # create a Lock for the shared value
+        self.tqdm_pos_lock = multiprocessing.Lock()
+
     @property
     def new_devices(self):
 
@@ -341,10 +356,10 @@ class DeviceManager():
         # for each port create a new Device and start the underlying thread
         for p in ports:
             # print info
-            print('DeviceManager[' + time.strftime("%d-%m-%Y %H:%M:%S") +\
-                  ']: new device connected (port ' + str(p) + ')')
+            # print('DeviceManager[' + time.strftime("%d-%m-%Y %H:%M:%S") +\
+            #       ']: new device connected (port ' + str(p) + ')')
             
-            new_device = Device(p)
+            new_device = Device(p, self.tqdm_position, self.tqdm_pos_lock)
             self.configured_devices[new_device.id] = new_device
             new_devices.append(new_device)
             new_device.start()
@@ -365,8 +380,8 @@ class DeviceManager():
         for p in ports:
 
             # print info
-            print('DeviceManager[' + time.strftime("%d-%m-%Y %H:%M:%S") +\
-                  ']: device disconnected (port ' + str(p) + ')')
+            # print('DeviceManager[' + time.strftime("%d-%m-%Y %H:%M:%S") +\
+            #       ']: device disconnected (port ' + str(p) + ')')
             
             # device id is defined as str(port.__hash__())
             device_id = str(hash(p))
