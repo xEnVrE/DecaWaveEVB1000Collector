@@ -6,7 +6,8 @@ Usage
 Python 3.x is required.
 
 Libraries required are
- * PySerial
+ * pySerial
+ * tqdm
  
 - **On Linux:**
 ```
