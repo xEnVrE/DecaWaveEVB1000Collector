@@ -9,7 +9,7 @@ Libraries required are
  * pySerial
  * tqdm
  
-- **On Linux:**
+**On Linux:**
 ```
     $ git clone https://github.com/xEnVrE/DecaWaveEVB1000Collector.git
     $ cd DecaWaveEVB1000Collector.git
