@@ -18,7 +18,7 @@ Libraries required are
 > You may need to add your user to the group that owns serial port device files  (e.g. /dev/ttyACM0) to 
      execute the application succesfully. However you can always run the script as a super user like
      ```
-     sudo python app.py
+     sudo python collector.py
      ```
 
 The application works also on Windows.
