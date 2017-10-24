@@ -146,8 +146,8 @@ class DataFromEVB1000:
                                'dest_id', 'range', 'flag']
             self.msg_structure = ['s'] + ['u'] * 4 + ['f'] + ['s']
         elif msg_type == 'trr':
-            self.msg_fields = ['msg_type', 'id', 'range_num', 'r0', 'r1', 'r2', 'r3']
-            self.msg_structure = ['s'] + ['u'] * 6
+            self.msg_fields = ['msg_type', 'id', 'r0', 'r1', 'r2', 'r3']
+            self.msg_structure = ['s'] + ['u'] * 5
         else:
             return False
 
